@@ -7,14 +7,24 @@
   <title>Let's Find a Mushroom</title>
   <style>
     body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
-    input { font-size: 1.2rem; width: 80px; padding: 6px; }
+    input, select { font-size: 1.2rem; padding: 6px; }
+    input[type="number"] { width: 80px; }
     button { font-size: 1rem; padding: 8px 16px; margin-left: 8px; cursor: pointer; }
     ul { list-style: none; padding: 0; margin-top: 24px; }
-    li { padding: 8px 0; border-bottom: 1px solid #ddd; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #ddd; }
+    .delete-btn { background: none; border: none; color: #999; font-size: 1rem; cursor: pointer; margin-left: 8px; padding: 0 4px; }
+    .delete-btn:hover { color: #c00; }
   </style>
 </head>
 <body>
   <h1>🍄‍🟫 Let's Find a Mushroom 🍄‍🟫</h1>
+
+<label for="mushroom">Type:</label>
+<select id="mushroom">
+<option value="Morel" selected>Morel</option>
+<option value="Oyster">Oyster</option>
+</select>
+<br><br>
 
 <label for="count">Mushrooms found:</label><br><br>
 <input type="number" id="count" min="1" placeholder="0">
@@ -27,12 +37,23 @@
       const count = parseInt(document.getElementById('count').value);
       if (!count || count < 1) { alert('Enter a number greater than 0.'); return; }
 
-      const entry = { count, timestamp: new Date().toISOString() };
+      const mushroom = document.getElementById('mushroom').value;
+      const entry = { count, mushroom, timestamp: new Date().toISOString() };
       const entries = getEntries();
-      entries.unshift(entry); // newest first
+      entries.unshift(entry);
       localStorage.setItem('morel_log', JSON.stringify(entries));
 
       document.getElementById('count').value = '';
+      renderLog();
+    }
+
+    function deleteEntry(index) {
+      const entries = getEntries();
+      const entry = entries[index];
+      const label = `${entry.count} ${entry.mushroom || 'Morel'}${entry.count !== 1 ? 's' : ''}`;
+      if (!confirm(`Delete this entry?\n\n${label}`)) return;
+      entries.splice(index, 1);
+      localStorage.setItem('morel_log', JSON.stringify(entries));
       renderLog();
     }
 
@@ -47,15 +68,19 @@
         ul.innerHTML = '<li style="color:#888">No finds logged yet.</li>';
         return;
       }
-      ul.innerHTML = entries.map(e => {
+      ul.innerHTML = entries.map((e, i) => {
+        const mushroom = e.mushroom || 'Morel';
         const d = new Date(e.timestamp);
         const dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
         const timeStr = d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
-        return `<li><strong>${e.count} morel${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}</li>`;
+        return `<li>
+          <span><strong>${e.count} ${mushroom}${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}</span>
+          <button class="delete-btn" onclick="deleteEntry(${i})" title="Delete entry">✕</button>
+        </li>`;
       }).join('');
     }
 
-    renderLog(); // populate on load
+    renderLog();
   </script>
 
 </body>
