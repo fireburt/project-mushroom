@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morel Log</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    input { font-size: 1.2rem; width: 80px; padding: 6px; }
+    button { font-size: 1rem; padding: 8px 16px; margin-left: 8px; cursor: pointer; }
+    ul { list-style: none; padding: 0; margin-top: 24px; }
+    li { padding: 8px 0; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Let's Find a Mushroom</h1>
+
+<label for="count">Mushrooms found:</label><br><br>
+<input type="number" id="count" min="1" placeholder="0">
+<button onclick="logFind()">Log Find</button>
+
+  <ul id="log"></ul>
+
+  <script>
+    function logFind() {
+      const count = parseInt(document.getElementById('count').value);
+      if (!count || count < 1) { alert('Enter a number greater than 0.'); return; }
+
+      const entry = { count, timestamp: new Date().toISOString() };
+      const entries = getEntries();
+      entries.unshift(entry); // newest first
+      localStorage.setItem('morel_log', JSON.stringify(entries));
+
+      document.getElementById('count').value = '';
+      renderLog();
+    }
+
+    function getEntries() {
+      return JSON.parse(localStorage.getItem('morel_log') || '[]');
+    }
+
+    function renderLog() {
+      const ul = document.getElementById('log');
+      const entries = getEntries();
+      if (entries.length === 0) {
+        ul.innerHTML = '<li style="color:#888">No finds logged yet.</li>';
+        return;
+      }
+      ul.innerHTML = entries.map(e => {
+        const d = new Date(e.timestamp);
+        const dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+        const timeStr = d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+        return `<li><strong>${e.count} morel${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}</li>`;
+      }).join('');
+    }
+
+    renderLog(); // populate on load
+  </script>
+
+</body>
+</html>
