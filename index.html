@@ -55,7 +55,7 @@
         pos => {
           const lat = pos.coords.latitude.toFixed(5);
           const lng = pos.coords.longitude.toFixed(5);
-          document.getElementById('location').textContent = `📍 ${lat}, ${lng}`;
+          document.getElementById('location').textContent = `${lat}, ${lng}`;
         },
         err => {
           document.getElementById('location').textContent = 'Location unavailable (permission denied?).';
