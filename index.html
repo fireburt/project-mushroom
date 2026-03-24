@@ -4,20 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Go Find a Mushroom</title>
+  <title>Find a Mushroom</title>
   <style>
     body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
-    input, select { font-size: 1.2rem; padding: 6px; }
+    input, select, textarea { font-size: 1.2rem; padding: 6px; }
     input[type="number"] { width: 80px; }
+    textarea { width: 100%; box-sizing: border-box; resize: vertical; rows: 2; }
     button { font-size: 1rem; padding: 8px 16px; margin-left: 8px; cursor: pointer; }
     ul { list-style: none; padding: 0; margin-top: 24px; }
-    li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #ddd; }
+    li { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #ddd; }
+    .entry-text { flex: 1; }
+    .entry-notes { display: block; font-size: 0.9rem; color: #555; margin-top: 2px; }
     .delete-btn { background: none; border: none; color: #999; font-size: 1rem; cursor: pointer; margin-left: 8px; padding: 0 4px; }
     .delete-btn:hover { color: #c00; }
   </style>
 </head>
 <body>
-  <h1>🍄‍🟫 Go Find a Mushroom 🍄‍🟫</h1>
+  <h1>🍄‍🟫 Find a Mushroom 🍄‍🟫</h1>
 
 <label for="mushroom">Type:</label>
 <select id="mushroom">
@@ -27,8 +30,15 @@
 <br><br>
 
 <label for="count">Mushrooms found:</label><br><br>
-<input type="number" id="count" min="1" value="1">
+<input type="number" id="count" min="1" value="1" inputmode="numeric" pattern="[0-9]*">
 <button onclick="logFind()">I found some!</button>
+<br><br>
+
+<label for="notes">Notes (optional):</label><br>
+
+  <textarea id="notes" rows="2" placeholder="Where you found them, conditions, etc."></textarea>
+
+  <br>
 
   <ul id="log"></ul>
 
@@ -38,12 +48,16 @@
       if (!count || count < 1) { alert('Enter a number greater than 0.'); return; }
 
       const mushroom = document.getElementById('mushroom').value;
+      const notes = document.getElementById('notes').value.trim();
       const entry = { count, mushroom, timestamp: new Date().toISOString() };
+      if (notes) entry.notes = notes;
+
       const entries = getEntries();
       entries.unshift(entry);
       localStorage.setItem('morel_log', JSON.stringify(entries));
 
-      document.getElementById('count').value = '';
+      document.getElementById('count').value = '1';
+      document.getElementById('notes').value = '';
       renderLog();
     }
 
@@ -73,8 +87,12 @@
         const d = new Date(e.timestamp);
         const dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
         const timeStr = d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+        const notesHtml = e.notes ? `<span class="entry-notes">${e.notes}</span>` : '';
         return `<li>
-          <span><strong>${e.count} ${mushroom}${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}</span>
+          <span class="entry-text">
+            <strong>${e.count} ${mushroom}${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}
+            ${notesHtml}
+          </span>
           <button class="delete-btn" onclick="deleteEntry(${i})" title="Delete entry">✕</button>
         </li>`;
       }).join('');
