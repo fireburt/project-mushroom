@@ -73,13 +73,12 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
     <ul id="log"></ul>
   </div>
 
-  <footer>v0.1.6</footer>
+  <footer>v0.1.7</footer>
 
   <script>
     let currentCoords = null;
     const debugMode = new URLSearchParams(window.location.search).get('debug') === '1';
 
-    // Set toggle link destination: on = turn off, off = turn on
     document.getElementById('debug-toggle').href = debugMode ? '?' : '?debug=1';
 
     if (debugMode) {
@@ -96,7 +95,7 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
           currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           const lat = currentCoords.lat.toFixed(5);
           const lng = currentCoords.lng.toFixed(5);
-          const url = `https://maps.apple.com/?ll=${lat},${lng}`;
+          const url = `https://maps.apple.com/?ll=${lat},${lng}&q=My+Location`;
           document.getElementById('location').innerHTML =
             `📍 <a href="${url}" target="_blank">${lat}, ${lng}</a>`;
         },
@@ -137,8 +136,8 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
     function deleteEntry(index) {
       const entries = getEntries();
       const entry = entries[index];
-      const label = `${entry.count} ${entry.mushroom || 'Morel'}${entry.count !== 1 ? 's' : ''}`;
-      if (!confirm(`Delete this entry?\n\n${label}`)) return;
+      const findNum = entries.length - index;
+      if (!confirm(`Delete Find #${findNum}?\n\n${entry.count} ${entry.mushroom || 'Morel'}${entry.count !== 1 ? 's' : ''}`)) return;
       entries.splice(index, 1);
       localStorage.setItem('morel_log', JSON.stringify(entries));
       renderLog();
@@ -156,6 +155,7 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
         return;
       }
       ul.innerHTML = entries.map((e, i) => {
+        const findNum = entries.length - i;
         const mushroom = e.mushroom || 'Morel';
         const d = new Date(e.timestamp);
         const dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
@@ -163,11 +163,17 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
         const notesHtml = e.notes
           ? `<span class="entry-notes">${e.notes}</span>` : '';
         const locationHtml = e.coords
-          ? `<span class="entry-location">📍 <a href="https://maps.apple.com/?ll=${e.coords.lat.toFixed(5)},${e.coords.lng.toFixed(5)}" target="_blank">${e.coords.lat.toFixed(5)}, ${e.coords.lng.toFixed(5)}</a></span>`
+          ? (() => {
+              const lat = e.coords.lat.toFixed(5);
+              const lng = e.coords.lng.toFixed(5);
+              const pinName = encodeURIComponent(`Mushroom Find ${findNum}`);
+              const url = `https://maps.apple.com/?ll=${lat},${lng}&q=${pinName}`;
+              return `<span class="entry-location">📍 <a href="${url}" target="_blank">${lat}, ${lng}</a></span>`;
+            })()
           : '';
         return `<li>
           <span class="entry-text">
-            <strong>${e.count} ${mushroom}${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}
+            <strong>Find #${findNum} &mdash; ${e.count} ${mushroom}${e.count !== 1 ? 's' : ''}</strong> &mdash; ${dateStr} at ${timeStr}
             ${locationHtml}
             ${notesHtml}
           </span>
