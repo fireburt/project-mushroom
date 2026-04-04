@@ -35,7 +35,7 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
   </style>
 </head>
 <body>
-  <h1><a href="?debug=1" style="text-decoration: none; color: inherit;">🍄</a> Find a Mushroom 🍄</h1>
+  <h1><a id="debug-toggle" style="text-decoration: none; color: inherit;">🍄</a> Find a Mushroom 🍄</h1>
 
   <div id="debug-panel" style="display:none">
     <strong>Debug</strong><br>
@@ -73,11 +73,14 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
     <ul id="log"></ul>
   </div>
 
-  <footer>v0.1.5</footer>
+  <footer>v0.1.6</footer>
 
   <script>
     let currentCoords = null;
     const debugMode = new URLSearchParams(window.location.search).get('debug') === '1';
+
+    // Set toggle link destination: on = turn off, off = turn on
+    document.getElementById('debug-toggle').href = debugMode ? '?' : '?debug=1';
 
     if (debugMode) {
       document.getElementById('debug-panel').style.display = 'block';
