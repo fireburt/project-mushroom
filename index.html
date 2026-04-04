@@ -11,45 +11,84 @@
     input[type="number"] { width: 80px; }
     textarea { width: 100%; box-sizing: border-box; resize: vertical; }
     button { font-size: 1rem; padding: 8px 16px; margin-left: 8px; cursor: pointer; }
-    ul { list-style: none; padding: 0; margin-top: 24px; }
-    li { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #ddd; }
-    .entry-text { flex: 1; }
-    .entry-notes { display: block; font-size: 0.9rem; color: #555; margin-top: 2px; }
-    .entry-location { display: block; font-size: 0.9rem; margin-top: 2px; }
-    .delete-btn { background: none; border: none; color: #999; font-size: 1rem; cursor: pointer; margin-left: 8px; padding: 0 4px; }
-    .delete-btn:hover { color: #c00; }
-    #location { font-size: 0.9rem; color: #555; margin: 4px 0 16px; }
-    footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; }
+
+```
+/* Tabs */
+.tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.tab-btn { flex: 1; padding: 10px; font-size: 1rem; cursor: pointer; background: #eee; border: none; border-radius: 6px; }
+.tab-btn.active { background: #333; color: #fff; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* History list */
+ul { list-style: none; padding: 0; margin-top: 0; }
+li { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #ddd; }
+.entry-text { flex: 1; }
+.entry-notes { display: block; font-size: 0.9rem; color: #555; margin-top: 2px; }
+.entry-location { display: block; font-size: 0.9rem; margin-top: 2px; }
+.delete-btn { background: none; border: none; color: #999; font-size: 1rem; cursor: pointer; margin-left: 8px; padding: 0 4px; }
+.delete-btn:hover { color: #c00; }
+
+/* Debug */
+#debug-panel { background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 16px; font-size: 0.85rem; color: #333; }
+#location { margin: 0; }
+
+footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; }
+```
+
   </style>
 </head>
 <body>
   <h1>🍄‍🟫 Find a Mushroom 🍄‍🟫</h1>
-  <div id="location">Getting location…</div>
 
-<label for="mushroom">Type:</label>
-<select id="mushroom">
-<option value="Morel" selected>Morel</option>
-<option value="Oyster">Oyster</option>
-</select>
-<br><br>
+  <div id="debug-panel" style="display:none">
+    <strong>Debug</strong><br>
+    <div id="location">Getting location…</div>
+  </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('log')">Log</button>
+    <button class="tab-btn" onclick="showTab('history')">History</button>
+  </div>
+
+  <!-- Log tab -->
+
+  <div id="tab-log" class="tab-panel active">
+    <label for="mushroom">Type:</label>
+    <select id="mushroom">
+      <option value="Morel" selected>Morel</option>
+      <option value="Oyster">Oyster</option>
+    </select>
+    <br><br>
+
+```
 <label for="count">Mushrooms found:</label><br><br>
 <input type="number" id="count" min="1" value="1" inputmode="numeric" pattern="[0-9]*">
 <button onclick="logFind()">I found some!</button>
 <br><br>
 
 <label for="notes">Notes (optional):</label><br>
+<textarea id="notes" rows="2" placeholder="Where you found them, conditions, etc."></textarea>
+```
 
-  <textarea id="notes" rows="2" placeholder="Where you found them, conditions, etc."></textarea>
+  </div>
 
-  <br>
+  <!-- History tab -->
 
-  <ul id="log"></ul>
+  <div id="tab-history" class="tab-panel">
+    <ul id="log"></ul>
+  </div>
 
-  <footer>v0.1.1</footer>
+  <footer>v0.1.2</footer>
 
   <script>
     let currentCoords = null;
+    const debugMode = new URLSearchParams(window.location.search).get('debug') === '1';
+
+    // --- Debug panel ---
+    if (debugMode) {
+      document.getElementById('debug-panel').style.display = 'block';
+    }
 
     // --- GPS ---
     function initLocation() {
@@ -71,6 +110,14 @@
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
+    }
+
+    // --- Tabs ---
+    function showTab(name) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.querySelector(`[onclick="showTab('${name}')"]`).classList.add('active');
     }
 
     // --- Log ---
