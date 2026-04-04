@@ -73,7 +73,7 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
     <ul id="log"></ul>
   </div>
 
-  <footer>v0.1.7</footer>
+  <footer>v0.1.8</footer>
 
   <script>
     let currentCoords = null;
@@ -83,6 +83,17 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
 
     if (debugMode) {
       document.getElementById('debug-panel').style.display = 'block';
+    }
+
+    // Replaces HTML special characters with safe entities so user-typed
+    // text can never be interpreted as markup or script.
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function initLocation() {
@@ -156,12 +167,12 @@ footer { margin-top: 32px; font-size: 0.75rem; color: #bbb; text-align: center; 
       }
       ul.innerHTML = entries.map((e, i) => {
         const findNum = entries.length - i;
-        const mushroom = e.mushroom || 'Morel';
+        const mushroom = escapeHtml(e.mushroom || 'Morel');
         const d = new Date(e.timestamp);
         const dateStr = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
         const timeStr = d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
         const notesHtml = e.notes
-          ? `<span class="entry-notes">${e.notes}</span>` : '';
+          ? `<span class="entry-notes">${escapeHtml(e.notes)}</span>` : '';
         const locationHtml = e.coords
           ? (() => {
               const lat = e.coords.lat.toFixed(5);
